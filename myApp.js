@@ -1,12 +1,21 @@
-var express = require('express');
-var app = express();
-require('dotenv').config()
+const express = require('express');
+const app = express();
+require('dotenv').config();
+const bodyParser = require('body-parser');
 
 htmlPath = __dirname + '/views/index.html';
 assetsPath = __dirname + '/public';
 
-
+app.enable('trust proxy');
 app.use('/public', express.static(assetsPath));
+app.use(
+    function(req, res, next) {
+        let str = req.method + " " + req.path + " - " + req.ip;
+        console.log(str);
+        next();
+    }
+)
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get(
     '/',
@@ -26,6 +35,36 @@ app.get(
         }
     }
 );
+
+app.get(
+    '/now',
+    function(req, res, next) {
+    req.time = new Date().toString();
+    next();
+    }, function(req, res) {
+        res.send({time: req.time});
+});
+
+app.get(
+    '/:word/echo',
+    function(req, res) {
+        res.json({echo: req.params.word});
+    });
+
+app.get(
+    '/:word/echo',
+    function(req, res) {
+        res.json({echo: req.params.word});
+    });
+
+app.route('/name').get(
+    function(req, res) {
+        res.json({name: req.query.first + ' ' + req.query.last});
+    }).post(
+    function(req, res) {
+        res.json({name: req.body.first + ' ' + req.body.last});
+    });
+
 
 
 
